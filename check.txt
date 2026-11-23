@@ -1,0 +1,176 @@
+1. Crear la clase SQLiteHelper
+
+Crea una clase llamada SQLiteHelper.java.
+
+Esta clase será responsable de:
+
+    Crear la base de datos.
+
+    Crear las tablas.
+
+    Insertar registros.
+
+    Consultar información.
+
+    Actualizar registros.
+
+    Eliminar registros.
+
+Código:
+java
+
+
+package com.example.miapp;
+
+import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
+
+public class SQLiteHelper extends SQLiteOpenHelper {
+
+    private static final String DATABASE_NAME = "MiBaseDatos.db";
+    private static final int DATABASE_VERSION = 1;
+
+    public SQLiteHelper(Context context) {
+        super(context, DATABASE_NAME, null, DATABASE_VERSION);
+    }
+
+    @Override
+    public void onCreate(SQLiteDatabase db) {
+
+        String tabla = "CREATE TABLE usuarios (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "nombre TEXT NOT NULL, " +
+                "correo TEXT NOT NULL)";
+
+        db.execSQL(tabla);
+    }
+
+    @Override
+    public void onUpgrade(SQLiteDatabase db,
+                          int oldVersion, int newVersion) {
+
+        db.execSQL("DROP TABLE IF EXISTS usuarios");
+        onCreate(db);
+    }
+}
+
+2. Insertar datos
+
+Para insertar registros utilizamos getWritableDatabase() y ContentValues.
+java
+
+
+public boolean insertarUsuario(String nombre, String correo) {
+
+    SQLiteDatabase db = this.getWritableDatabase();
+
+    ContentValues valores = new ContentValues();
+    valores.put("nombre", nombre);
+    valores.put("correo", correo);
+
+    long resultado = db.insert("usuarios", null, valores);
+
+    db.close();
+
+    return resultado != -1;
+}
+
+Agrega el siguiente import:
+java
+
+import android.content.ContentValues;
+
+3. Consultar datos
+
+Para consultar los registros utilizamos un objeto Cursor.
+java
+
+
+public Cursor consultarUsuarios() {
+
+    SQLiteDatabase db = this.getReadableDatabase();
+
+    return db.rawQuery(
+        "SELECT * FROM usuarios",
+        null
+    );
+}
+
+Agrega el import:
+java
+
+import android.database.Cursor;
+
+4. Actualizar datos
+java
+
+
+public int actualizarUsuario(int id,
+                             String nombre,
+                             String correo) {
+
+    SQLiteDatabase db = this.getWritableDatabase();
+
+    ContentValues valores = new ContentValues();
+    valores.put("nombre", nombre);
+    valores.put("correo", correo);
+
+    int resultado = db.update(
+        "usuarios",
+        valores,
+        "id=?",
+        new String[]{String.valueOf(id)}
+    );
+
+    db.close();
+
+    return resultado;
+}
+
+5. Eliminar datos
+java
+
+
+public int eliminarUsuario(int id) {
+
+    SQLiteDatabase db = this.getWritableDatabase();
+
+    int resultado = db.delete(
+        "usuarios",
+        "id=?",
+        new String[]{String.valueOf(id)}
+    );
+
+    db.close();
+
+    return resultado;
+}
+
+6. Utilizar SQLiteHelper desde MainActivity
+
+Por ejemplo, para insertar un usuario desde tu actividad:
+java
+
+
+SQLiteHelper helper = new SQLiteHelper(this);
+
+boolean insertado = helper.insertarUsuario(
+    "Juan Pérez",
+    "juan@gmail.com"
+);
+
+if (insertado) {
+    Toast.makeText(this,
+        "Usuario guardado",
+        Toast.LENGTH_SHORT).show();
+} else {
+    Toast.makeText(this,
+        "Error al guardar",
+        Toast.LENGTH_SHORT).show();
+}
+
+Agrega el import:
+java
+
+import android.widget.Toast;
